@@ -228,7 +228,6 @@ class Net():
 
 			# for each neuron:
 			for n in range(0, len(layer)-1):
-				#layer[n].updateInputWeights(prevLayer)
 				self.layers[layerNum-1] = layer[n].updateInputWeights(prevLayer)
 
 
@@ -253,7 +252,7 @@ class Net():
 
 
 
-def main2():
+def main():
 
 	myNet = None
 	if(os.path.exists('neuralNet.pkl')):
@@ -315,3 +314,6 @@ def main2():
 	# Saving the objects:
 	with open('neuralNet.pkl', 'wb') as f:
 	    pickle.dump([myNet], f)
+
+
+main()
