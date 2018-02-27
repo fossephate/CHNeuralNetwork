@@ -24,8 +24,8 @@ class Neuron():
 		self.myIndex = myIndex
 		self.gradient = 0
 
-		self.eta = 0.15# [0.0..1.0]
-		self.alpha = 0.5# [0.0..n]
+		self.eta = 0.01# [0.0..1.0]#0.15
+		self.alpha = 0.1# [0.0..n]#0.5
 
 		for c in range(0, numOutputs):
 			self.outputWeights.append(Connection())
@@ -248,6 +248,11 @@ class Net():
 		return
 
 
+	def updateNeuronSettings(self, eta, alpha):
+		for i in range(0, len(self.layers)):
+			for j in range(0, len(self.layers[i])):
+				self.layers[i][j].eta = eta
+				self.layers[i][j].alpha = alpha
 
 
 

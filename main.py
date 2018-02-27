@@ -297,13 +297,16 @@ def main():
 
 	training = True
 
-
+	count = 0
 
 	myNet = None
 	if(os.path.exists('neuralNet.pkl')):
 		# Getting back the objects:
 		with open('neuralNet.pkl', 'rb') as f:
 		    myNet = pickle.load(f)[0]
+
+		myNet.updateNeuronSettings(0.001, 0.1)
+
 	else:
 		topology = [5, 5, 5]
 		myNet = Net(topology)
@@ -351,13 +354,17 @@ def main():
 			for i in range(0, len(targetVals)):
 				res.append(round(abs(resultVals[i])))
 
-			
+
 			if not training:
 				print(res)
 				useResult(res)
 
+
+			count += 1
 			#print(resultVals)
-			print("RPE: " + str(myNet.recentAverageError))
+			if(count == 1000):
+				print("RPE: " + str(myNet.recentAverageError))
+				count = 0
 
 
 		if win32api.GetAsyncKeyState(ord('G')):
@@ -368,6 +375,12 @@ def main():
 
 		# global quit
 		if win32api.GetAsyncKeyState(ord('Q')):
+			# Save the neural network:
+			# with open('neuralNet.pkl', 'wb') as f:
+			# 	pickle.dump([myNet], f)
+			break
+		# global quit
+		if win32api.GetAsyncKeyState(ord('W')):
 			# Save the neural network:
 			with open('neuralNet.pkl', 'wb') as f:
 				pickle.dump([myNet], f)
