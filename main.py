@@ -295,7 +295,7 @@ def loop():
 
 def main():
 
-	training = True
+	training = False
 
 	count = 0
 
@@ -356,13 +356,13 @@ def main():
 
 
 			if not training:
-				print(res)
+				#print(res)
 				useResult(res)
 
 
 			count += 1
 			#print(resultVals)
-			if(count == 1000):
+			if(count == 10000):
 				print("RPE: " + str(myNet.recentAverageError))
 				count = 0
 
