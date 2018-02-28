@@ -117,6 +117,7 @@ w = bufferX*2
 h = bufferY*2
 
 topCutOff = 300
+yValue = 240
 
 
 
@@ -155,7 +156,7 @@ def loop():
     SSx1 = l+440
     SSy1 = t+topCutOff
     SSWidth = 400
-    SSHeight = 640-topCutOff
+    SSHeight = 650-topCutOff
     
     #get window position and info
     hwnd = win32gui.FindWindow(None, "Clone Heroa")
@@ -266,6 +267,8 @@ def loop():
     #cv2.putText(frame, str(counter), (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.65, (0, 0, 255), 3)
     #counter += 1
 
+    cv2.circle(frame, (int(200), int(yValue)), int(5), (0, 255, 255), 2)
+
     # show screen capture and mask
     cv2.imshow("screen capture", frame)
     cv2.imshow("mask", mask)
@@ -276,12 +279,14 @@ def loop():
     #chars = ['a', 's', 'j', 'k', 'l']
     cv2.waitKey(1)
 
+    maxValue = 300
+
     notes = []
-    notes.append(pts[0][1]/700.0)
-    notes.append(pts[1][1]/700.0)
-    notes.append(pts[2][1]/700.0)
-    notes.append(pts[3][1]/700.0)
-    notes.append(pts[4][1]/700.0)
+    notes.append(pts[0][1]/maxValue)
+    notes.append(pts[1][1]/maxValue)
+    notes.append(pts[2][1]/maxValue)
+    notes.append(pts[3][1]/maxValue)
+    notes.append(pts[4][1]/maxValue)
 
     end = time.clock()
     diffInSeconds = end - start
@@ -308,7 +313,7 @@ def main():
         with open('neuralNet.pkl', 'rb') as f:
             myNet = pickle.load(f)[0]
 
-        myNet.updateNeuronSettings(0.001, 0.1)
+        myNet.updateNeuronSettings(0.01, 0.5)
 
     else:
         topology = [5, 5, 5]
@@ -319,9 +324,11 @@ def main():
         global toggle
         global timeSinceLastToggle
 
+        maxValue = 300.0
+
         inputVals = []
         if useRandom:
-            inputVals = [randint(0,700)/700.0,randint(0,700)/700.0,randint(0,700)/700.0,randint(0,700)/700.0,randint(0,700)/700.0]
+            inputVals = [randint(0,maxValue)/maxValue,randint(0,maxValue)/maxValue,randint(0,maxValue)/maxValue,randint(0,maxValue)/maxValue,randint(0,maxValue)/maxValue]
         else:
             inputVals = loop()
 
@@ -330,7 +337,7 @@ def main():
 
         # training data:
         A = B = C = D = E = 0
-        t = 275/700.0
+        t = yValue/maxValue#230
         if(inputVals[0] > t):
             A = 1
         if(inputVals[1] > t):
@@ -383,13 +390,12 @@ def main():
 
         # global quit
         if win32api.GetAsyncKeyState(ord('Q')):
-            # Save the neural network:
-            # with open('neuralNet.pkl', 'wb') as f:
-            #   pickle.dump([myNet], f)
+            print("quitting")
             break
         # global quit
         if win32api.GetAsyncKeyState(ord('W')):
             # Save the neural network:
+            print("writing to file, then quitting")
             with open('neuralNet.pkl', 'wb') as f:
                 pickle.dump([myNet], f)
             break
