@@ -116,6 +116,7 @@ y2 = centerY + bufferY
 w = bufferX*2
 h = bufferY*2
 
+topCutOff = 300
 
 
 
@@ -129,18 +130,18 @@ sleepTime = 0.005#0.005
 
 
 def useResult(res):
-	chars = ['a', 's', 'j', 'k', 'l']
+    chars = ['a', 's', 'j', 'k', 'l']
 
-	for i in range(0, len(chars)):
-		if(res[i] == 1.0):
-			keyboard.press(chars[i])
-			# time.sleep(sleepTime)
-			# keyboard.release(chars[i])
+    for i in range(0, len(chars)):
+        if(res[i] == 1.0):
+            keyboard.press(chars[i])
+            # time.sleep(sleepTime)
+            # keyboard.release(chars[i])
 
-	time.sleep(sleepTime)
-	for i in range(0, len(chars)):
-		if(res[i] == 1.0):
-			keyboard.release(chars[i])
+    time.sleep(sleepTime)
+    for i in range(0, len(chars)):
+        if(res[i] == 1.0):
+            keyboard.release(chars[i])
 
 # loop
 def loop():
@@ -151,10 +152,10 @@ def loop():
     #get window position and info
     hwnd = win32gui.FindWindow(None, "Clone Hero")
     l, t, r, b = win32gui.GetWindowRect(hwnd)
-    SSx1 = l+390
-    SSy1 = t
-    SSWidth = 500
-    SSHeight = 640
+    SSx1 = l+440
+    SSy1 = t+topCutOff
+    SSWidth = 400
+    SSHeight = 640-topCutOff
     
     #get window position and info
     hwnd = win32gui.FindWindow(None, "Clone Heroa")
@@ -273,7 +274,7 @@ def loop():
     #print("---------")
 
     #chars = ['a', 's', 'j', 'k', 'l']
-    cv2.waitKey(10)
+    cv2.waitKey(1)
 
     notes = []
     notes.append(pts[0][1]/700.0)
@@ -295,96 +296,103 @@ def loop():
 
 def main():
 
-	training = False
+    useRandom = False
+    training = True
+    playing = True
+    useBot = False
+    count = 0
 
-	count = 0
+    myNet = None
+    if(os.path.exists('neuralNet.pkl')):
+        # Getting back the objects:
+        with open('neuralNet.pkl', 'rb') as f:
+            myNet = pickle.load(f)[0]
 
-	myNet = None
-	if(os.path.exists('neuralNet.pkl')):
-		# Getting back the objects:
-		with open('neuralNet.pkl', 'rb') as f:
-		    myNet = pickle.load(f)[0]
+        myNet.updateNeuronSettings(0.001, 0.1)
 
-		myNet.updateNeuronSettings(0.001, 0.1)
+    else:
+        topology = [5, 5, 5]
+        myNet = Net(topology)
 
-	else:
-		topology = [5, 5, 5]
-		myNet = Net(topology)
+    while(True):
 
-	while(True):
+        global toggle
+        global timeSinceLastToggle
 
-		global toggle
-		global timeSinceLastToggle
+        inputVals = []
+        if useRandom:
+            inputVals = [randint(0,700)/700.0,randint(0,700)/700.0,randint(0,700)/700.0,randint(0,700)/700.0,randint(0,700)/700.0]
+        else:
+            inputVals = loop()
 
-		inputVals = []
-		if training:
-			inputVals = [randint(200,700)/700.0,randint(200,700)/700.0,randint(200,700)/700.0,randint(200,700)/700.0,randint(200,700)/700.0]
-		else:
-			inputVals = loop()
-
-		# training data:
-		A = B = C = D = E = 0
-		t = 550/700.0
-		if(inputVals[0] > t):
-			A = 1
-		if(inputVals[1] > t):
-			B = 1
-		if(inputVals[2] > t):
-			C = 1
-		if(inputVals[3] > t):
-			D = 1
-		if(inputVals[4] > t):
-			E = 1
-
-		if toggle:
-			# feed the data from Clone Hero
-			myNet.feedForward(inputVals)
-
-			resultVals = []
-			myNet.getResults(resultVals)
-
-			targetVals = [A,B,C,D,E]
-			
-			# teach
-			if training:
-				myNet.backProp(targetVals)
-
-			# round the results:
-			res = []
-			for i in range(0, len(targetVals)):
-				res.append(round(abs(resultVals[i])))
+        #for i in range(0, 5):
 
 
-			if not training:
-				#print(res)
-				useResult(res)
+        # training data:
+        A = B = C = D = E = 0
+        t = 275/700.0
+        if(inputVals[0] > t):
+            A = 1
+        if(inputVals[1] > t):
+            B = 1
+        if(inputVals[2] > t):
+            C = 1
+        if(inputVals[3] > t):
+            D = 1
+        if(inputVals[4] > t):
+            E = 1
+
+        if toggle:
+            # feed the data from Clone Hero
+            myNet.feedForward(inputVals)
+
+            resultVals = []
+            myNet.getResults(resultVals)
+
+            targetVals = [A,B,C,D,E]
+            
+            # teach
+            if training:
+                myNet.backProp(targetVals)
+
+            # round the results:
+            res = []
+            for i in range(0, len(targetVals)):
+                res.append(round(abs(resultVals[i])))
 
 
-			count += 1
-			#print(resultVals)
-			if(count == 10000):
-				print("RPE: " + str(myNet.recentAverageError))
-				count = 0
+            if playing:
+                if useBot:
+                    useResult(targetVals)
+                else:
+                    useResult(res)
 
 
-		if win32api.GetAsyncKeyState(ord('G')):
-			diff = time.clock() - timeSinceLastToggle
-			if(diff > 0.5):
-				timeSinceLastToggle = time.clock()
-				toggle = not toggle
+            count += 1
+            #print(resultVals)
+            if(count == 10):
+                print("RPE: " + str(myNet.recentAverageError))
+                count = 0
 
-		# global quit
-		if win32api.GetAsyncKeyState(ord('Q')):
-			# Save the neural network:
-			# with open('neuralNet.pkl', 'wb') as f:
-			# 	pickle.dump([myNet], f)
-			break
-		# global quit
-		if win32api.GetAsyncKeyState(ord('W')):
-			# Save the neural network:
-			with open('neuralNet.pkl', 'wb') as f:
-				pickle.dump([myNet], f)
-			break
+
+        if win32api.GetAsyncKeyState(ord('G')):
+            diff = time.clock() - timeSinceLastToggle
+            if(diff > 0.5):
+                timeSinceLastToggle = time.clock()
+                toggle = not toggle
+
+        # global quit
+        if win32api.GetAsyncKeyState(ord('Q')):
+            # Save the neural network:
+            # with open('neuralNet.pkl', 'wb') as f:
+            #   pickle.dump([myNet], f)
+            break
+        # global quit
+        if win32api.GetAsyncKeyState(ord('W')):
+            # Save the neural network:
+            with open('neuralNet.pkl', 'wb') as f:
+                pickle.dump([myNet], f)
+            break
 
 
 
