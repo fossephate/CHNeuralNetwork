@@ -116,8 +116,9 @@ y2 = centerY + bufferY
 w = bufferX*2
 h = bufferY*2
 
-topCutOff = 300
-yValue = 240
+topCutOff = 300+200
+yValue = 240-200#14 speed 1 player
+yValue = 280-200#12 speed 2 player
 
 
 
@@ -157,6 +158,9 @@ def loop():
     SSy1 = t+topCutOff
     SSWidth = 400
     SSHeight = 650-topCutOff
+
+    SSx1 = l+440-320#2 player
+    SSWidth = 400#2 player
     
     #get window position and info
     hwnd = win32gui.FindWindow(None, "Clone Heroa")
@@ -300,11 +304,25 @@ def loop():
 
 
 def main():
-
+    
     useRandom = False
     training = True
     playing = True
     useBot = False
+    
+    
+    if True:
+        useRandom = False
+        training = True
+        playing = True
+        useBot = False
+    else:
+        useRandom = True
+        training = True
+        playing = False
+        useBot = False
+
+
     count = 0
 
     myNet = None
