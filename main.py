@@ -16,6 +16,9 @@ import win32gui
 import win32ui
 import time
 
+# for time delaying the input:
+from threading import Timer
+
 from pynput.keyboard import Key, Controller
 keyboard = Controller()
 
@@ -116,9 +119,9 @@ y2 = centerY + bufferY
 w = bufferX*2
 h = bufferY*2
 
-topCutOff = 300+200
-yValue = 240-200#14 speed 1 player
-yValue = 280-200#12 speed 2 player
+topCutOff = 300+250
+yValue = 240-250#14 speed 1 player
+yValue = 280-250#14 speed 2 player
 
 
 
@@ -131,7 +134,25 @@ timeSinceLastKey = time.clock()
 sleepTime = 0.005#0.005
 
 
-def useResult(res):
+# def useResult(res):
+#     chars = ['a', 's', 'j', 'k', 'l']
+
+#     for i in range(0, len(chars)):
+#         if(res[i] == 1.0):
+#             keyboard.press(chars[i])
+#             # time.sleep(sleepTime)
+#             # keyboard.release(chars[i])
+
+#     time.sleep(sleepTime)
+#     for i in range(0, len(chars)):
+#         if(res[i] == 1.0):
+#             keyboard.release(chars[i])
+
+
+def useResult(a, b, c, d, e):
+
+    res = [a, b, c, d, e]
+
     chars = ['a', 's', 'j', 'k', 'l']
 
     for i in range(0, len(chars)):
@@ -304,6 +325,8 @@ def loop():
 
 
 def main():
+
+    results = []
     
     useRandom = False
     training = True
@@ -315,12 +338,12 @@ def main():
         useRandom = False
         training = True
         playing = True
-        useBot = False
+        #useBot = False
     else:
         useRandom = True
         training = True
         playing = False
-        useBot = False
+        #useBot = False
 
 
     count = 0
@@ -388,9 +411,13 @@ def main():
 
             if playing:
                 if useBot:
-                    useResult(targetVals)
+                    #useResult(targetVals)
+                    # time delay
+                    s = Timer(0.034, useResult, (targetVals))
                 else:
-                    useResult(res)
+                    #useResult(res)
+                    s = Timer(0.034, useResult, (res))
+                s.start()
 
 
             count += 1
